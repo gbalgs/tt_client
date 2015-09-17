@@ -1,0 +1,54 @@
+
+//请求登录
+message		cs_account_login[id=10001]{
+	required	int32		userID			=1;//平台用户ID
+	required	int32		unixTime		=2;//unix时间戳
+	required	string		accountName		=3;//平台用户账号
+	required	string		ticket			=4;//验证密钥
+	required    int16       serverID        =5;//服务器ID
+}
+
+message		sc_account_login[id=10002]{
+	// 0 => 成功
+	// 1 => 已经登录
+	// 2 => 登录的服务器id不符
+	// 3 => key超时
+	// 4 => key错误
+	required	int8		result			=1;
+	required	bool		isCreate		=2;//true=已经创建主公，false=未创建主公
+}
+
+//创建角色
+message		cs_account_create[id=10003]{
+	required	string		roleName			=1;//名字
+	required	int8		modelID				=2;//模型
+}
+
+message		sc_account_create[id=10004]{
+	//0 => 创建成功
+	//1 => 角色名称已经被使用
+	//2 => 非法字符
+	//3 => 角色名称长度为2~6个汉字
+	//4 => 用户已经创建角色
+	//5 => 没有这个模型
+	//6 => 没有登录
+	required	int8		result				=1;
+}
+
+//强制下线通知
+message 	sc_account_kick[id=10005]{
+	//1 => 服务器人数已满
+	//2 => 服务器关闭
+	required	int8		reason				=1;
+}
+
+//心跳包
+message	cs_account_heart[id=10006]{
+}
+message	sc_account_heart[id=10007]{
+	required	int32		unixTime			=1;//当前服务器时间
+}
+
+//注销登录
+message		cs_account_logout[id=10008]{
+}

@@ -1,0 +1,13 @@
+{application, gb_util,
+ [{description, "util tool!"},
+  {id, "gb_util"},
+  {vsn, "0.1"},
+  {modules, []},
+  {registered, []},
+  {applications, [
+		kernel,
+		stdlib
+	]},
+  {mod, {gb_util_app, []}},
+  {env, []}
+  ]}.
