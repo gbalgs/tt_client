@@ -27,7 +27,7 @@
 %%游戏服端口
 -define(PORT,12317).
 %%游戏服编号
--define(SERVER_ID,2).
+-define(SERVER_ID,1).
 %%游戏服验证key(和游戏服setting配置的登陆验证key一样)
 -define(KEY,"jiash0jsa&XS%KSGIKHIGH").
 
@@ -72,10 +72,33 @@ handle_cast(_Msg, State) ->
 handle_info({tcp, _, Binary}, #state{socket=_Socket}=State) ->
 	case catch proto:decode(Binary) of
 		{'EXIT',Info} ->
-			io:format("decode err:~p~n~w~n", [Info,Binary]);
+			io:format("decode err:~p~n~w~n", [Info,Binary]),
+			{stop,normal,State};
 		{_,RC}->
 			io:format("==receive msg==>>~p~n",[RC]),
-			{noreply, State}
+			case RC of
+				#sc_account_login{result = Result,isCreate = IsCreate}->
+					if
+						Result =/= 0 ->
+							io:format("login auth fail, result=~w, exit~n",[Result]),
+							{stop,normal,State};
+						true ->
+%% 						   io:format("auth success~n", []),
+							#state{userid=UserID,socket=Socket} = State,
+							ensure_role_exist(Socket,UserID,IsCreate),
+							{noreply, State#state{isCreate=IsCreate}}
+					end;
+				#sc_account_create{result=Result} ->
+					if
+						Result =:= 0 ->
+							{noreply, State#state{isCreate=true}};
+						true ->
+							io:format("create role fail,result=~w,exit~n", [Result]),
+							{stop,normal,State}
+					end;
+				_->
+					{noreply, State}
+			end
 	end;
 handle_info({tcp_closed, Socket}, #state{socket=Socket} = State)->
 	{stop, normal, State};
@@ -94,7 +117,6 @@ handle_info(send_heart, #state{socket=Socket} = State)->
 handle_info({init,ID},State)->
 	case gen_tcp:connect(?IP,?PORT, ?TCP_OPTIONS, 5000) of
 		{ok, Socket}->
-			io:format("==============~n"),
 			put(socket,Socket),
 			timer:send_interval(?TIMEOUT_SECOND, send_heart),
 			auth(Socket,lists:concat(["robot",ID]),ID,?SERVER_ID,gb_util:now()),
@@ -138,14 +160,14 @@ auth(Socket,AccountName,UserID,ServerID,UnixTime) ->
 	send_socket(Socket, Record).
 
 %% 获取角色列表（并创建角色）
-%% ensure_role_exist(_,_,true)->
-%% 	next;
-%% ensure_role_exist(Socket,UserID,false)->
-%% 	send_create_role(Socket,UserID).
-%%
-%% send_create_role(Socket,UserID)->
-%% 	RoleName = lists:concat(["robot",UserID]),
-%% 	send_socket(Socket, #cs_account_create{modelID=1,roleName=RoleName}).
+ensure_role_exist(_,_,true)->
+	next;
+ensure_role_exist(Socket,UserID,false)->
+	send_create_role(Socket,UserID).
+
+send_create_role(Socket,UserID)->
+	RoleName = lists:concat(["robot",UserID]),
+	send_socket(Socket, #cs_account_create{sex =1,roleName=RoleName}).
 
 send_socket(Socket,Record)->
 	case catch proto:encode(Record) of

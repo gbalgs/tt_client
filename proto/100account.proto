@@ -21,17 +21,17 @@ message		sc_account_login[id=10002]{
 //创建角色
 message		cs_account_create[id=10003]{
 	required	string		roleName			=1;//名字
-	required	int8		modelID				=2;//模型
+	required	int8		sex					=2;//0:女 1:男
 }
 
 message		sc_account_create[id=10004]{
 	//0 => 创建成功
-	//1 => 角色名称已经被使用
-	//2 => 非法字符
-	//3 => 角色名称长度为2~6个汉字
-	//4 => 用户已经创建角色
-	//5 => 没有这个模型
-	//6 => 没有登录
+	//1 => 没有登录
+	//2 => 用户已经创建角色
+	//3 => 性别错误
+	//4 => 角色名称长度为2~6个字符
+	//5 => 名字只能是字母数字和汉子组合
+	//6 => 角色名称已经被使用
 	required	int8		result				=1;
 }
 
@@ -39,6 +39,7 @@ message		sc_account_create[id=10004]{
 message 	sc_account_kick[id=10005]{
 	//1 => 服务器人数已满
 	//2 => 服务器关闭
+	//3 => 异地登陆
 	required	int8		reason				=1;
 }
 

@@ -20,7 +20,7 @@
 	isCreate=[] :: boolean()}).
 -record(cs_account_create,{
 	roleName=[] :: ?string,
-	modelID=[] :: ?int8}).
+	sex=[] :: ?int8}).
 -record(sc_account_create,{
 	result=[] :: ?int8}).
 -record(sc_account_kick,{
